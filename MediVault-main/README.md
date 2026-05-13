@@ -2,9 +2,9 @@
 
 > A trusted digital foundation for the healthcare ecosystem — Web3-powered, patient-centric healthcare data management platform.
 
-**Health in Pixels: Startup Hackathon & Cohort 2025**  
-Theme: Health IT Systems & Healthcare Data Privacy  
-Stage: Functional Web3 MVP (Foundational Layer)
+**WitchHunt: AI Hackathon 2026**  
+Theme: Health & Well Being  
+Stage: Functional MVP (Foundational Layer)
 
 ---
 
