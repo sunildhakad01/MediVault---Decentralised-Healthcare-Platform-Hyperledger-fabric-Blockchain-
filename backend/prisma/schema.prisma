@@ -1,0 +1,724 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "linux-musl"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ─────────────────────────────────────────────────────────────────────
+
+enum UserType {
+  patient
+  doctor
+  hospital_admin
+  admin
+  staff
+}
+
+enum PinLength {
+  FOUR  @map("4")
+  SIX   @map("6")
+}
+
+enum DoctorStatus {
+  pending_hospital
+  pending_admin
+  approved
+  rejected
+  inactive
+  suspended
+}
+
+enum HospitalStatus {
+  pending
+  approved
+  rejected
+  suspended
+  inactive
+}
+
+enum AppointmentStatus {
+  scheduled
+  confirmed
+  completed
+  cancelled
+  no_show
+  walk_in
+}
+
+enum InvoiceStatus {
+  draft
+  sent
+  paid
+  cancelled
+  refunded
+}
+
+enum FabricQueueStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+enum AnnouncementStatus {
+  draft
+  scheduled
+  sent
+  failed
+}
+
+enum InviteStatus {
+  pending
+  accepted
+  expired
+  cancelled
+}
+
+enum BedStatus {
+  available
+  occupied
+  maintenance
+  reserved
+}
+
+// ── Core Auth Models ──────────────────────────────────────────────────────────
+
+model User {
+  userId               String    @id @default(cuid())
+  mobile               String?   @unique
+  email                String?   @unique
+  isMobileVerified     Boolean   @default(false)
+  isEmailVerified      Boolean   @default(false)
+  pinHash              String
+  pinSalt              String
+  pinLength            String    @default("6")
+  userType             UserType  @default(patient)
+  role                 String?
+  hospital             String?
+  department           String?
+  firstName            String?
+  lastName             String?
+  licenseNumber        String?
+  fabricCertPath       String?
+  fabricMSPID          String?
+  fabricUserId         String?
+  abhaId               String?   @unique
+  abhaVerified         Boolean   @default(false)
+  failedLoginAttempts  Int       @default(0)
+  lockedUntil          DateTime?
+  lastLoginAt          DateTime?
+  lastLoginIP          String?
+  registeredDevices    Json?
+  isActive             Boolean   @default(true)
+  isBlocked            Boolean   @default(false)
+  metadata             Json?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  otpLogs          OtpLog[]
+  loginHistory     LoginHistory[]
+  notifications    Notification[]
+  patient          Patient?
+  doctor           Doctor?
+  hospitalStaff    HospitalStaff[]
+  auditLogs        AdminAuditLog[]
+
+  @@map("users")
+}
+
+model OtpLog {
+  id           Int       @id @default(autoincrement())
+  identifier   String
+  sessionId    String    @unique @default(cuid())
+  otpHash      String
+  type         String
+  attempts     Int       @default(0)
+  isUsed       Boolean   @default(false)
+  verifiedAt   DateTime?
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+
+  user         User?     @relation(fields: [userId], references: [userId], onDelete: SetNull)
+  userId       String?
+
+  @@map("otp_logs")
+}
+
+model LoginHistory {
+  id                Int      @id @default(autoincrement())
+  userId            String
+  identifier        String?
+  ipAddress         String?
+  userAgent         String?
+  deviceFingerprint String?
+  success           Boolean
+  failureReason     String?
+  createdAt         DateTime @default(now())
+
+  user              User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("login_history")
+}
+
+// ── Hospital ──────────────────────────────────────────────────────────────────
+
+model Hospital {
+  id                  String         @id @default(cuid())
+  name                String
+  hospitalType        String?
+  addressLine1        String         @default("")
+  addressLine2        String?
+  city                String         @default("")
+  state               String         @default("")
+  pincode             String         @default("")
+  phone               String         @default("")
+  altPhone            String?
+  emergencyPhone      String?
+  email               String         @unique
+  website             String?
+  registrationNumber  String         @unique
+  licenseNumber       String?
+  gstin               String?
+  yearEstablished     Int?
+  numberOfBeds        Int?
+  landmark            String?
+  googleMapsLink      String?
+  workingHours        Json?
+  emergencyAvailable  Boolean        @default(false)
+  specialisations     String[]
+  documents           Json?
+  status              HospitalStatus @default(pending)
+  logoUrl             String?
+  adminUserId         String?
+  adminName           String?
+  adminEmail          String?
+  adminPhone          String?
+  rejectionReason     String?
+  suspensionReason    String?
+  verifiedAt          DateTime?
+  submittedAt         DateTime?
+  verifiedByAdminId   String?
+  isActive            Boolean        @default(true)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  doctors       Doctor[]
+  appointments  Appointment[]
+  departments   HospitalDepartment[]
+  invites       DoctorInvite[]
+  staff         HospitalStaff[]
+  wards         Ward[]
+
+  @@map("hospitals")
+}
+
+// ── Doctor ────────────────────────────────────────────────────────────────────
+
+model Doctor {
+  id                      String       @id @default(cuid())
+  userId                  String?      @unique
+  fullName                String
+  email                   String
+  phone                   String       @default("")
+  gender                  String?
+  dateOfBirth             String?
+  specialization          String?
+  degree                  String?
+  medicalCouncilRegNo     String?
+  medicalCouncil          String?
+  experienceYears         Int          @default(0)
+  consultationFee         Float        @default(0)
+  doctorType              String?
+  hospitalId              String?
+  department              String?
+  designation             String?
+  joiningDate             String?
+  clinicName              String?
+  clinicAddress           String?
+  clinicCity              String?
+  clinicState             String?
+  clinicPincode           String?
+  clinicPhone             String?
+  serviceAreas            String[]
+  availableForHomeVisits  Boolean      @default(false)
+  languagesSpoken         String[]
+  bio                     String?
+  documents               Json?
+  profilePhotoUrl         String?
+  digitalSignatureUrl     String?
+  status                  DoctorStatus @default(pending_hospital)
+  isApproved              Boolean      @default(false)
+  isActive                Boolean      @default(true)
+  verifiedBy              String?
+  verifiedById            String?
+  verifiedAt              DateTime?
+  rejectionReason         String?
+  suspensionReason        String?
+  forceSuspendedByAdmin   Boolean      @default(false)
+  accountCreatedBy        String?
+  fabricTxId              String?
+  appointmentCount        Int          @default(0)
+  successfulTreatmentCount Int         @default(0)
+  source                  String?      @default("self")
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+
+  user         User?         @relation(fields: [userId], references: [userId], onDelete: SetNull)
+  hospital     Hospital?     @relation(fields: [hospitalId], references: [id], onDelete: SetNull)
+  appointments Appointment[]
+  availability DoctorAvailability[]
+  leaves       DoctorLeave[]
+
+  @@map("doctors")
+}
+
+// ── Patient ───────────────────────────────────────────────────────────────────
+
+model Patient {
+  id               String  @id @default(cuid())
+  userId           String? @unique
+  uniquePatientId  String? @unique
+  fullName         String
+  phone            String  @default("")
+  alternatePhone   String?
+  email            String?
+  dob              String?
+  gender           String?
+  bloodGroup       String?
+  address          String?
+  city             String?
+  state            String?
+  pincode          String?
+  aadhaarLast4     String?
+  emergencyContact Json?
+  profilePhotoUrl  String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user              User?               @relation(fields: [userId], references: [userId], onDelete: SetNull)
+  appointments      Appointment[]
+  prescriptions     Prescription[]
+  labOrders         LabOrder[]
+  labReports        LabReport[]
+  invoices          Invoice[]
+  medicationReminders MedicationReminder[]
+
+  @@map("patients")
+}
+
+// ── Appointment ───────────────────────────────────────────────────────────────
+
+model Appointment {
+  id                  String            @id @default(cuid())
+  patientId           String
+  doctorId            String
+  hospitalId          String?
+  appointmentDate     String
+  slotStart           String?
+  slotEnd             String?
+  tokenNumber         Int               @default(0)
+  reason              String?
+  condition           String?
+  message             String?
+  patientName         String?
+  patientPhone        String?
+  patientEmail        String?
+  status              AppointmentStatus @default(scheduled)
+  notes               Json?
+  cancelledBy         String?
+  cancellationReason  String?
+  consultationNote    String?
+  fabricTxId          String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  patient          Patient?          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor           Doctor?           @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  hospital         Hospital?         @relation(fields: [hospitalId], references: [id], onDelete: SetNull)
+  prescription     Prescription?
+  labOrder         LabOrder?
+  consultationNote_ ConsultationNote?
+  invoice          Invoice?
+
+  @@map("appointments")
+}
+
+// ── Clinical ──────────────────────────────────────────────────────────────────
+
+model Prescription {
+  id                  String   @id @default(cuid())
+  patientId           String
+  doctorId            String
+  appointmentId       String?  @unique
+  hospitalId          String?
+  medicines           Json?
+  specialInstructions String?
+  followUpDate        String?
+  fabricTxId          String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@map("prescriptions")
+}
+
+model LabOrder {
+  id             String   @id @default(cuid())
+  patientId      String
+  doctorId       String?
+  appointmentId  String?  @unique
+  hospitalId     String?
+  tests          Json?
+  urgency        String?
+  clinicalNotes  String?
+  fastingRequired Boolean @default(false)
+  status         String   @default("pending")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  labReports  LabReport[]
+
+  @@map("lab_orders")
+}
+
+model LabReport {
+  id           String   @id @default(cuid())
+  labOrderId   String?
+  patientId    String
+  uploadedBy   String?
+  hospitalId   String?
+  ipfsCid      String?
+  pinataUrl    String?
+  reportDate   String?
+  testName     String?
+  fabricTxId   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  labOrder  LabOrder? @relation(fields: [labOrderId], references: [id], onDelete: SetNull)
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("lab_reports")
+}
+
+model ConsultationNote {
+  id                   String   @id @default(uuid())
+  appointmentId        String   @unique
+  patientId            String
+  doctorId             String
+  chiefComplaint       String?
+  examinationFindings  String?
+  diagnosis            String?
+  treatmentPlan        String?
+  followUpDate         String?
+  referral             String?
+  fabricTxId           String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@map("consultation_notes")
+}
+
+// ── Billing ───────────────────────────────────────────────────────────────────
+
+model Invoice {
+  id               String        @id @default(cuid())
+  patientId        String
+  doctorId         String?
+  hospitalId       String?
+  appointmentId    String?       @unique
+  lineItems        Json?
+  subtotal         Float         @default(0)
+  gstPercent       Float         @default(18)
+  gstAmount        Float         @default(0)
+  totalAmount      Float         @default(0)
+  currency         String        @default("INR")
+  status           InvoiceStatus @default(draft)
+  gstin            String?
+  paidAt           DateTime?
+  paymentMethod    String?
+  paymentReference String?
+  upiRef           String?
+  retryCount       Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@map("invoices")
+}
+
+// ── Notifications / Reminders ─────────────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  userType  String
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model MedicationReminder {
+  id             String   @id @default(uuid())
+  patientUserId  String
+  patientId      String
+  prescriptionId String?
+  medicineName   String
+  frequency      String
+  reminderTimes  String[]
+  note           String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([patientUserId, prescriptionId, medicineName])
+  @@map("medication_reminders")
+}
+
+// ── Fabric / Audit ────────────────────────────────────────────────────────────
+
+model FabricPendingQueue {
+  id               String            @id @default(uuid())
+  channel          String?
+  chaincode        String?
+  functionName     String
+  args             Json?
+  initiatedById    String?
+  initiatedByRole  String?
+  status           FabricQueueStatus @default(pending)
+  retryCount       Int               @default(0)
+  lastError        String?
+  lastAttemptedAt  DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@map("fabric_pending_queue")
+}
+
+model AdminAuditLog {
+  id         String   @id @default(uuid())
+  adminId    String?
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  admin User? @relation(fields: [adminId], references: [userId], onDelete: SetNull)
+
+  @@map("admin_audit_logs")
+}
+
+// ── Hospital Operations ───────────────────────────────────────────────────────
+
+model HospitalDepartment {
+  id                 String   @id @default(uuid())
+  hospitalId         String
+  name               String
+  description        String?
+  headDoctorId       String?
+  dailyCapacity      Int      @default(20)
+  defaultSlotMinutes Int      @default(30)
+  workingHours       Json?
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@unique([hospitalId, name])
+  @@map("hospital_departments")
+}
+
+model DoctorInvite {
+  id              String       @id @default(uuid())
+  hospitalId      String
+  token           String       @unique @default(uuid())
+  fullName        String
+  email           String
+  phone           String
+  department      String?
+  designation     String?
+  consultationFee Float?
+  message         String?
+  status          InviteStatus @default(pending)
+  expiresAt       DateTime
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@map("doctor_invites")
+}
+
+model HospitalStaff {
+  id          String   @id @default(uuid())
+  hospitalId  String
+  userId      String?
+  fullName    String
+  role        String
+  phone       String
+  email       String?
+  department  String?
+  shiftStart  String?
+  shiftEnd    String?
+  workingDays Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  user     User?    @relation(fields: [userId], references: [userId], onDelete: SetNull)
+
+  @@map("hospital_staff")
+}
+
+// ── Availability ──────────────────────────────────────────────────────────────
+
+model DoctorAvailability {
+  id                  String  @id @default(uuid())
+  doctorId            String
+  dayOfWeek           Int
+  isActive            Boolean @default(true)
+  startTime           String
+  endTime             String
+  slotDurationMinutes Int     @default(30)
+  maxPatients         Int     @default(20)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, dayOfWeek])
+  @@map("doctor_availability")
+}
+
+model DoctorLeave {
+  id        String   @id @default(uuid())
+  doctorId  String
+  leaveDate String
+  reason    String?
+  createdAt DateTime @default(now())
+
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, leaveDate])
+  @@map("doctor_leaves")
+}
+
+// ── Announcements ─────────────────────────────────────────────────────────────
+
+model Announcement {
+  id          String             @id @default(uuid())
+  title       String
+  message     String
+  targets     Json?
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  status      AnnouncementStatus @default(draft)
+  createdBy   String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@map("announcements")
+}
+
+// ── Config / Reference Data ───────────────────────────────────────────────────
+
+model Specialization {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("specializations")
+}
+
+model ConfigDepartment {
+  id         String   @id @default(uuid())
+  name       String
+  hospitalId String?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@map("config_departments")
+}
+
+model InsuranceProvider {
+  id           String   @id @default(uuid())
+  name         String
+  contactEmail String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  @@map("insurance_providers")
+}
+
+model SystemConfig {
+  key       String   @id
+  value     String
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+// ── Beds / Wards ──────────────────────────────────────────────────────────────
+
+model Ward {
+  id         String   @id @default(uuid())
+  hospitalId String
+  name       String
+  type       String
+  totalBeds  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  hospital Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  beds     Bed[]
+
+  @@map("wards")
+}
+
+model Bed {
+  id                String    @id @default(uuid())
+  wardId            String
+  hospitalId        String
+  bedNumber         String
+  status            BedStatus @default(available)
+  patientId         String?
+  admittedAt        DateTime?
+  admittingDoctorId String?
+  dischargedAt      DateTime?
+  dischargeNotes    String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  ward Ward @relation(fields: [wardId], references: [id], onDelete: Cascade)
+
+  @@unique([wardId, bedNumber])
+  @@map("beds")
+}

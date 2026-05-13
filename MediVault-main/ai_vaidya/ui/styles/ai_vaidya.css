@@ -1,0 +1,136 @@
+/* AI-Vaidya — ai_vaidya.css | MediVault Platform */
+/* ================================================== */
+/* Isolated styles scoped to .aivaidya-* prefix.      */
+/* All colors reference MediVault's existing palette. */
+/* No global bleed — every rule is scoped.            */
+
+/* ── Drawer Slide Animations ─────────────────────── */
+@keyframes aivaidya-slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes aivaidya-slide-out {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+
+.aivaidya-drawer-open {
+  animation: aivaidya-slide-in 280ms ease-out forwards;
+}
+
+.aivaidya-drawer-close {
+  animation: aivaidya-slide-out 280ms ease-in forwards;
+}
+
+/* ── Overlay Fade ────────────────────────────────── */
+@keyframes aivaidya-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes aivaidya-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.aivaidya-overlay-open {
+  animation: aivaidya-fade-in 280ms ease-out forwards;
+}
+
+.aivaidya-overlay-close {
+  animation: aivaidya-fade-out 280ms ease-in forwards;
+}
+
+/* ── Avatar Breathing Animation ─────────────────── */
+@keyframes aivaidya-breathing {
+  0%,  100% { opacity: 1; }
+  50%        { opacity: 0.75; }
+}
+
+.aivaidya-avatar-breathing {
+  animation: aivaidya-breathing 3s ease-in-out infinite;
+}
+
+/* ── Online Pulse Dot ────────────────────────────── */
+@keyframes aivaidya-pulse-dot {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.4); opacity: 0.7; }
+}
+
+.aivaidya-pulse-dot {
+  animation: aivaidya-pulse-dot 2s ease-in-out infinite;
+}
+
+/* ── Typing Indicator Dots ───────────────────────── */
+@keyframes aivaidya-typing-bounce {
+  0%, 80%, 100% { transform: translateY(0);    opacity: 0.4; }
+  40%            { transform: translateY(-6px); opacity: 1;   }
+}
+
+.aivaidya-typing-dot:nth-child(1) { animation: aivaidya-typing-bounce 1.2s ease-in-out infinite 0ms; }
+.aivaidya-typing-dot:nth-child(2) { animation: aivaidya-typing-bounce 1.2s ease-in-out infinite 200ms; }
+.aivaidya-typing-dot:nth-child(3) { animation: aivaidya-typing-bounce 1.2s ease-in-out infinite 400ms; }
+
+/* ── Message Appear Animation ───────────────────── */
+@keyframes aivaidya-message-appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.aivaidya-message-appear {
+  animation: aivaidya-message-appear 150ms ease-out forwards;
+}
+
+/* ── FAB Button Press ────────────────────────────── */
+.aivaidya-fab:active {
+  transform: scale(0.97);
+}
+
+/* ── Smooth Scroll for Messages ─────────────────── */
+.aivaidya-messages-scroll {
+  scroll-behavior: smooth;
+}
+
+/* ── Suggested Prompt Chips Scrollbar Hide ───────── */
+.aivaidya-prompts-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.aivaidya-prompts-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Textarea Auto-expand ────────────────────────── */
+.aivaidya-textarea {
+  resize: none;
+  overflow-y: hidden;
+  min-height: 40px;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.5;
+}
+
+/* ── Upload Progress Bar ─────────────────────────── */
+@keyframes aivaidya-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+.aivaidya-progress-bar {
+  animation: aivaidya-progress 1.5s ease-out forwards;
+}
+
+/* ── Mobile: full-width drawer ───────────────────── */
+@media (max-width: 640px) {
+  .aivaidya-drawer {
+    width: 100vw !important;
+    right: 0 !important;
+  }
+}

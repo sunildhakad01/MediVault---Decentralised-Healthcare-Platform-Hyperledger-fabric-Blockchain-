@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Sequence {
+  name  String @id
+  value Int    @default(1)
+}
+
+model User {
+  userId        String   @id
+  userType      String
+  contactMethod String
+  contactValue  String   @unique
+  pinHash       String?
+  pinSalt       String?
+  pinLength     Int      @default(6)
+  passwordHash  String?
+  passwordSalt  String?
+  name          String?
+  hospitalId    String?
+  createdAt     DateTime @default(now())
+
+  patient Patient?
+  doctor  Doctor?
+}
+
+model Patient {
+  id               String   @id
+  userId           String   @unique
+  fullName         String
+  email            String
+  phone            String
+  dob              String?
+  gender           String?
+  bloodGroup       String?
+  address          String?
+  city             String?
+  state            String?
+  pincode          String?
+  aadhaarLast4     String?
+  emergencyContact Json?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+
+  user         User          @relation(fields: [userId], references: [userId])
+  appointments Appointment[]
+}
+
+model Doctor {
+  id                       String   @id
+  userId                   String?  @unique
+  fullName                 String
+  email                    String
+  phone                    String
+  specialization           String?
+  degree                   String?
+  medicalCouncilRegNo      String?
+  medicalCouncil           String?
+  experienceYears          Int      @default(0)
+  consultationFee          Float    @default(0)
+  languagesSpoken          String[]
+  bio                      String?
+  hospitalId               String?
+  clinicName               String?
+  clinicAddress            String?
+  clinicCity               String?
+  clinicState              String?
+  isApproved               Boolean  @default(false)
+  isActive                 Boolean  @default(true)
+  appointmentCount         Int      @default(0)
+  successfulTreatmentCount Int      @default(0)
+  createdAt                DateTime @default(now())
+
+  user         User?         @relation(fields: [userId], references: [userId])
+  hospital     Hospital?     @relation(fields: [hospitalId], references: [id])
+  appointments Appointment[]
+}
+
+model Hospital {
+  id                 String   @id
+  name               String
+  hospitalType       String?
+  registrationNumber String?
+  email              String
+  phone              String?
+  addressLine1       String?
+  addressLine2       String?
+  city               String?
+  state              String?
+  pincode            String?
+  adminUserId        String?
+  adminName          String?
+  adminEmail         String?
+  documents          Json?
+  status             String   @default("pending")
+  isApproved         Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  doctors Doctor[]
+}
+
+model Appointment {
+  id               String   @id
+  doctorId         String
+  patientId        String
+  patientName      String?
+  patientPhone     String?
+  patientEmail     String?
+  date             String
+  timeSlotStart    String?
+  timeSlotEnd      String?
+  tokenNumber      Int
+  reason           String?
+  condition        String?
+  message          String?
+  status           String   @default("scheduled")
+  consultationNote Json?
+  fabricTxId       String?
+  createdAt        DateTime @default(now())
+
+  doctor  Doctor  @relation(fields: [doctorId], references: [id])
+  patient Patient @relation(fields: [patientId], references: [id])
+}

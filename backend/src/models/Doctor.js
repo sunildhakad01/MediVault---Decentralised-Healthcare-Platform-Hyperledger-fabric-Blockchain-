@@ -1,0 +1,42 @@
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
+
+const Doctor = sequelize.define('Doctor', {
+  id: { type: DataTypes.STRING, primaryKey: true },
+  userId: { type: DataTypes.STRING, allowNull: false },
+  fullName: { type: DataTypes.STRING, allowNull: false },
+  email: { type: DataTypes.STRING, allowNull: false },
+  phone: { type: DataTypes.STRING, allowNull: false },
+  profilePhotoUrl: { type: DataTypes.STRING, allowNull: true },
+  medicalCouncilRegNo: { type: DataTypes.STRING, allowNull: false },
+  medicalCouncil: { type: DataTypes.STRING, allowNull: false },
+  degree: { type: DataTypes.STRING, allowNull: false },
+  specialization: { type: DataTypes.STRING, allowNull: false },
+  experienceYears: { type: DataTypes.INTEGER, defaultValue: 0 },
+  bio: { type: DataTypes.TEXT, allowNull: true },
+  consultationFee: { type: DataTypes.DECIMAL(10,2), allowNull: false },
+  doctorType: { type: DataTypes.ENUM('hospital','self_clinic','freelancer'), allowNull: false },
+  hospitalId: { type: DataTypes.STRING, allowNull: true },
+  clinicName: { type: DataTypes.STRING, allowNull: true },
+  clinicAddress: { type: DataTypes.STRING, allowNull: true },
+  clinicCity: { type: DataTypes.STRING, allowNull: true },
+  clinicState: { type: DataTypes.STRING, allowNull: true },
+  clinicPincode: { type: DataTypes.STRING(6), allowNull: true },
+  clinicPhone: { type: DataTypes.STRING, allowNull: true },
+  clinicGstin: { type: DataTypes.STRING(15), allowNull: true },
+  serviceAreas: { type: DataTypes.JSON, defaultValue: [] },
+  availableForHomeVisits: { type: DataTypes.BOOLEAN, defaultValue: false },
+  languagesSpoken: { type: DataTypes.JSON, defaultValue: [] },
+  documents: { type: DataTypes.JSON, defaultValue: [] },
+  digitalSignatureUrl: { type: DataTypes.STRING, allowNull: true },
+  status: { type: DataTypes.ENUM('pending_hospital','pending_admin','approved','rejected','suspended'), defaultValue: 'pending_hospital' },
+  verifiedBy: { type: DataTypes.ENUM('hospital','admin'), allowNull: true },
+  verifiedById: { type: DataTypes.STRING, allowNull: true },
+  verifiedAt: { type: DataTypes.DATE, allowNull: true },
+  rejectionReason: { type: DataTypes.TEXT, allowNull: true },
+  suspensionReason: { type: DataTypes.TEXT, allowNull: true },
+  forceSuspendedByAdmin: { type: DataTypes.BOOLEAN, defaultValue: false },
+  fabricTxId: { type: DataTypes.STRING, allowNull: true },
+}, { timestamps: true });
+
+module.exports = Doctor;

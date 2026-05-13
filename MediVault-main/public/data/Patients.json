@@ -1,0 +1,242 @@
+[
+  {
+    "FullName": "Alice Johnson",
+    "Age": 32,
+    "Gender": "Female",
+    "PhoneNumber": "+1-202-555-0101",
+    "EmailAddress": "alice.johnson@example.com",
+    "CompleteAddress": "245 Maple St, New York, NY 10001, USA",
+    "EmergencyContact": {
+      "Name": "Robert Johnson",
+      "Phone": "+1-202-555-0191",
+      "Relation": "Husband"
+    },
+    "BloodType": "O+",
+    "KnownAllergies": ["Penicillin"],
+    "CurrentMedications": ["Paracetamol"]
+  },
+  {
+    "FullName": "Brian Smith",
+    "Age": 45,
+    "Gender": "Male",
+    "PhoneNumber": "+1-415-555-0125",
+    "EmailAddress": "brian.smith@example.com",
+    "CompleteAddress": "98 Pine St, San Francisco, CA 94104, USA",
+    "EmergencyContact": {
+      "Name": "Laura Smith",
+      "Phone": "+1-415-555-0192",
+      "Relation": "Wife"
+    },
+    "BloodType": "A+",
+    "KnownAllergies": ["Peanuts", "Shellfish"],
+    "CurrentMedications": ["Atorvastatin"]
+  },
+  {
+    "FullName": "Catherine Davis",
+    "Age": 29,
+    "Gender": "Female",
+    "PhoneNumber": "+1-312-555-0173",
+    "EmailAddress": "catherine.davis@example.com",
+    "CompleteAddress": "742 Lake Shore Dr, Chicago, IL 60611, USA",
+    "EmergencyContact": {
+      "Name": "Emma Davis",
+      "Phone": "+1-312-555-0132",
+      "Relation": "Sister"
+    },
+    "BloodType": "B+",
+    "KnownAllergies": ["Dust"],
+    "CurrentMedications": ["Cetirizine"]
+  },
+  {
+    "FullName": "Daniel Thompson",
+    "Age": 53,
+    "Gender": "Male",
+    "PhoneNumber": "+1-617-555-0188",
+    "EmailAddress": "daniel.thompson@example.com",
+    "CompleteAddress": "512 Beacon St, Boston, MA 02116, USA",
+    "EmergencyContact": {
+      "Name": "Olivia Thompson",
+      "Phone": "+1-617-555-0195",
+      "Relation": "Daughter"
+    },
+    "BloodType": "AB-",
+    "KnownAllergies": ["None"],
+    "CurrentMedications": ["Losartan", "Aspirin"]
+  },
+  {
+    "FullName": "Emily Clark",
+    "Age": 38,
+    "Gender": "Female",
+    "PhoneNumber": "+1-214-555-0113",
+    "EmailAddress": "emily.clark@example.com",
+    "CompleteAddress": "78 Oak St, Dallas, TX 75201, USA",
+    "EmergencyContact": {
+      "Name": "Henry Clark",
+      "Phone": "+1-214-555-0159",
+      "Relation": "Brother"
+    },
+    "BloodType": "O-",
+    "KnownAllergies": ["Aspirin"],
+    "CurrentMedications": ["Metformin"]
+  },
+  {
+    "FullName": "Frank Wilson",
+    "Age": 61,
+    "Gender": "Male",
+    "PhoneNumber": "+1-305-555-0174",
+    "EmailAddress": "frank.wilson@example.com",
+    "CompleteAddress": "654 Ocean Dr, Miami, FL 33139, USA",
+    "EmergencyContact": {
+      "Name": "Sophia Wilson",
+      "Phone": "+1-305-555-0143",
+      "Relation": "Wife"
+    },
+    "BloodType": "A-",
+    "KnownAllergies": ["Lactose"],
+    "CurrentMedications": ["Omeprazole", "Warfarin"]
+  },
+  {
+    "FullName": "Grace Martinez",
+    "Age": 27,
+    "Gender": "Female",
+    "PhoneNumber": "+1-206-555-0166",
+    "EmailAddress": "grace.martinez@example.com",
+    "CompleteAddress": "321 Broadway, Seattle, WA 98101, USA",
+    "EmergencyContact": {
+      "Name": "Miguel Martinez",
+      "Phone": "+1-206-555-0181",
+      "Relation": "Father"
+    },
+    "BloodType": "B-",
+    "KnownAllergies": ["Pollen"],
+    "CurrentMedications": ["Ibuprofen"]
+  },
+  {
+    "FullName": "Henry Lopez",
+    "Age": 49,
+    "Gender": "Male",
+    "PhoneNumber": "+1-602-555-0147",
+    "EmailAddress": "henry.lopez@example.com",
+    "CompleteAddress": "87 Desert Rd, Phoenix, AZ 85001, USA",
+    "EmergencyContact": {
+      "Name": "Elena Lopez",
+      "Phone": "+1-602-555-0197",
+      "Relation": "Wife"
+    },
+    "BloodType": "O+",
+    "KnownAllergies": ["Seafood"],
+    "CurrentMedications": ["Amoxicillin"]
+  },
+  {
+    "FullName": "Isabella White",
+    "Age": 34,
+    "Gender": "Female",
+    "PhoneNumber": "+1-303-555-0199",
+    "EmailAddress": "isabella.white@example.com",
+    "CompleteAddress": "123 Mountain Ave, Denver, CO 80202, USA",
+    "EmergencyContact": {
+      "Name": "James White",
+      "Phone": "+1-303-555-0155",
+      "Relation": "Husband"
+    },
+    "BloodType": "AB+",
+    "KnownAllergies": ["Latex"],
+    "CurrentMedications": ["Levothyroxine"]
+  },
+  {
+    "FullName": "Jack Harris",
+    "Age": 41,
+    "Gender": "Male",
+    "PhoneNumber": "+1-702-555-0120",
+    "EmailAddress": "jack.harris@example.com",
+    "CompleteAddress": "543 Strip Blvd, Las Vegas, NV 89109, USA",
+    "EmergencyContact": {
+      "Name": "Anna Harris",
+      "Phone": "+1-702-555-0133",
+      "Relation": "Wife"
+    },
+    "BloodType": "A+",
+    "KnownAllergies": ["Sulfa drugs"],
+    "CurrentMedications": ["Clopidogrel"]
+  },
+  {
+    "FullName": "Karen Hall",
+    "Age": 36,
+    "Gender": "Female",
+    "PhoneNumber": "+1-512-555-0118",
+    "EmailAddress": "karen.hall@example.com",
+    "CompleteAddress": "210 Barton Springs Rd, Austin, TX 78704, USA",
+    "EmergencyContact": {
+      "Name": "Michael Hall",
+      "Phone": "+1-512-555-0175",
+      "Relation": "Husband"
+    },
+    "BloodType": "B+",
+    "KnownAllergies": ["None"],
+    "CurrentMedications": ["Hydrochlorothiazide"]
+  },
+  {
+    "FullName": "Liam Scott",
+    "Age": 50,
+    "Gender": "Male",
+    "PhoneNumber": "+1-404-555-0150",
+    "EmailAddress": "liam.scott@example.com",
+    "CompleteAddress": "77 Peachtree St, Atlanta, GA 30308, USA",
+    "EmergencyContact": {
+      "Name": "Eva Scott",
+      "Phone": "+1-404-555-0177",
+      "Relation": "Wife"
+    },
+    "BloodType": "O-",
+    "KnownAllergies": ["Aspirin"],
+    "CurrentMedications": ["Warfarin"]
+  },
+  {
+    "FullName": "Mia Lewis",
+    "Age": 23,
+    "Gender": "Female",
+    "PhoneNumber": "+1-808-555-0107",
+    "EmailAddress": "mia.lewis@example.com",
+    "CompleteAddress": "23 Aloha Ave, Honolulu, HI 96815, USA",
+    "EmergencyContact": {
+      "Name": "David Lewis",
+      "Phone": "+1-808-555-0131",
+      "Relation": "Father"
+    },
+    "BloodType": "A+",
+    "KnownAllergies": ["Gluten"],
+    "CurrentMedications": ["Insulin Glargine"]
+  },
+  {
+    "FullName": "Nathan Young",
+    "Age": 39,
+    "Gender": "Male",
+    "PhoneNumber": "+1-919-555-0119",
+    "EmailAddress": "nathan.young@example.com",
+    "CompleteAddress": "123 Hillsborough St, Raleigh, NC 27607, USA",
+    "EmergencyContact": {
+      "Name": "Linda Young",
+      "Phone": "+1-919-555-0158",
+      "Relation": "Wife"
+    },
+    "BloodType": "AB+",
+    "KnownAllergies": ["None"],
+    "CurrentMedications": ["Azithromycin"]
+  },
+  {
+    "FullName": "Olivia King",
+    "Age": 28,
+    "Gender": "Female",
+    "PhoneNumber": "+1-503-555-0144",
+    "EmailAddress": "olivia.king@example.com",
+    "CompleteAddress": "345 Pearl St, Portland, OR 97209, USA",
+    "EmergencyContact": {
+      "Name": "Emma King",
+      "Phone": "+1-503-555-0180",
+      "Relation": "Sister"
+    },
+    "BloodType": "O+",
+    "KnownAllergies": ["Penicillin"],
+    "CurrentMedications": ["Ibuprofen", "Paracetamol"]
+  }
+]

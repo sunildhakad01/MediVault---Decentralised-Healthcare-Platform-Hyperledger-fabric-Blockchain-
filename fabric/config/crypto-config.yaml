@@ -1,0 +1,23 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: medivault.local
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer
+
+PeerOrgs:
+  - Name: Hospital1
+    Domain: hospital1.medivault.local
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: Hospital2
+    Domain: hospital2.medivault.local
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1

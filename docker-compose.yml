@@ -1,0 +1,404 @@
+services:
+
+  # ── PostgreSQL ────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: medivault-postgres
+    environment:
+      POSTGRES_USER: medivault
+      POSTGRES_PASSWORD: medivault123
+      POSTGRES_DB: medivault
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - medivault-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medivault"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # ── Redis ─────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: medivault-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - medivault-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  # ── pgAdmin (PostgreSQL GUI) ──────────────────────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: medivault-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@medivault.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    networks:
+      - medivault-network
+    depends_on:
+      - postgres
+
+  # ── CouchDB (Fabric state DB) ─────────────────────────────────────────────────
+  couchdb_hospital1:
+    image: couchdb:3.2
+    container_name: couchdb-hospital1
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: adminpw
+    ports:
+      - "5984:5984"
+    volumes:
+      - couchdb_hospital1_data:/opt/couchdb/data
+    networks:
+      - medivault-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  couchdb_hospital2:
+    image: couchdb:3.2
+    container_name: couchdb-hospital2
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: adminpw
+    ports:
+      - "5985:5984"
+    volumes:
+      - couchdb_hospital2_data:/opt/couchdb/data
+    networks:
+      - medivault-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # ── Fabric CA ─────────────────────────────────────────────────────────────────
+  # CAs use cryptogen-generated root CA keys so their issued certs are trusted
+  # by the peers/orderer. The CA key is found dynamically at startup.
+  ca-hospital1:
+    image: hyperledger/fabric-ca:1.5
+    container_name: ca-hospital1
+    environment:
+      FABRIC_CA_HOME: /etc/hyperledger/fabric-ca-server
+      FABRIC_CA_SERVER_CA_NAME: ca-hospital1
+      FABRIC_CA_SERVER_PORT: 7054
+      FABRIC_CA_SERVER_TLS_ENABLED: "false"
+    ports:
+      - "7054:7054"
+    command: >
+      sh -c '
+        KEY=$$(find /ca-keys -maxdepth 1 \( -name "*_sk" -o -name "priv_sk" \) 2>/dev/null | head -1);
+        CERT=$$(find /ca-keys -maxdepth 1 -name "*.pem" | head -1);
+        if [ -n "$$KEY" ] && [ -n "$$CERT" ]; then
+          exec fabric-ca-server start -b admin:hospital1pw
+            --ca.certfile "$$CERT"
+            --ca.keyfile "$$KEY"
+            --cfg.identities.allowremove
+            --cfg.affiliations.allowremove;
+        else
+          exec fabric-ca-server start -b admin:hospital1pw
+            --cfg.identities.allowremove
+            --cfg.affiliations.allowremove;
+        fi
+      '
+    volumes:
+      - ca_hospital1_data:/etc/hyperledger/fabric-ca-server
+      - ./fabric/organizations/peerOrganizations/hospital1.medivault.local/ca:/ca-keys:ro
+    networks:
+      - medivault-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7054/cainfo"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  ca-hospital2:
+    image: hyperledger/fabric-ca:1.5
+    container_name: ca-hospital2
+    environment:
+      FABRIC_CA_HOME: /etc/hyperledger/fabric-ca-server
+      FABRIC_CA_SERVER_CA_NAME: ca-hospital2
+      FABRIC_CA_SERVER_PORT: 7054
+      FABRIC_CA_SERVER_TLS_ENABLED: "false"
+    ports:
+      - "7055:7054"
+    command: >
+      sh -c '
+        KEY=$$(find /ca-keys -maxdepth 1 \( -name "*_sk" -o -name "priv_sk" \) 2>/dev/null | head -1);
+        CERT=$$(find /ca-keys -maxdepth 1 -name "*.pem" | head -1);
+        if [ -n "$$KEY" ] && [ -n "$$CERT" ]; then
+          exec fabric-ca-server start -b admin:hospital2pw
+            --ca.certfile "$$CERT"
+            --ca.keyfile "$$KEY"
+            --cfg.identities.allowremove
+            --cfg.affiliations.allowremove;
+        else
+          exec fabric-ca-server start -b admin:hospital2pw
+            --cfg.identities.allowremove
+            --cfg.affiliations.allowremove;
+        fi
+      '
+    volumes:
+      - ca_hospital2_data:/etc/hyperledger/fabric-ca-server
+      - ./fabric/organizations/peerOrganizations/hospital2.medivault.local/ca:/ca-keys:ro
+    networks:
+      - medivault-network
+
+  ca-orderer:
+    image: hyperledger/fabric-ca:1.5
+    container_name: ca-orderer
+    environment:
+      FABRIC_CA_HOME: /etc/hyperledger/fabric-ca-server
+      FABRIC_CA_SERVER_CA_NAME: ca-orderer
+      FABRIC_CA_SERVER_PORT: 7056
+      FABRIC_CA_SERVER_TLS_ENABLED: "false"
+    ports:
+      - "7056:7056"
+    command: >
+      sh -c '
+        KEY=$$(find /ca-keys -maxdepth 1 \( -name "*_sk" -o -name "priv_sk" \) 2>/dev/null | head -1);
+        CERT=$$(find /ca-keys -maxdepth 1 -name "*.pem" | head -1);
+        if [ -n "$$KEY" ] && [ -n "$$CERT" ]; then
+          exec fabric-ca-server start -b admin:ordererpw -p 7056
+            --ca.certfile "$$CERT"
+            --ca.keyfile "$$KEY"
+            --cfg.identities.allowremove;
+        else
+          exec fabric-ca-server start -b admin:ordererpw -p 7056
+            --cfg.identities.allowremove;
+        fi
+      '
+    volumes:
+      - ca_orderer_data:/etc/hyperledger/fabric-ca-server
+      - ./fabric/organizations/ordererOrganizations/medivault.local/ca:/ca-keys:ro
+    networks:
+      - medivault-network
+
+  # ── Fabric Orderer ────────────────────────────────────────────────────────────
+  orderer.medivault.local:
+    image: hyperledger/fabric-orderer:2.5
+    container_name: orderer.medivault.local
+    environment:
+      FABRIC_LOGGING_SPEC: INFO
+      ORDERER_GENERAL_LISTENADDRESS: 0.0.0.0
+      ORDERER_GENERAL_LISTENPORT: 7050
+      ORDERER_GENERAL_LOCALMSPID: OrdererMSP
+      ORDERER_GENERAL_LOCALMSPDIR: /var/hyperledger/orderer/msp
+      ORDERER_GENERAL_TLS_ENABLED: "true"
+      ORDERER_GENERAL_TLS_PRIVATEKEY: /var/hyperledger/orderer/tls/server.key
+      ORDERER_GENERAL_TLS_CERTIFICATE: /var/hyperledger/orderer/tls/server.crt
+      ORDERER_GENERAL_TLS_ROOTCAS: "[/var/hyperledger/orderer/tls/ca.crt]"
+      ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE: /var/hyperledger/orderer/tls/server.crt
+      ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY: /var/hyperledger/orderer/tls/server.key
+      ORDERER_GENERAL_CLUSTER_ROOTCAS: "[/var/hyperledger/orderer/tls/ca.crt]"
+      ORDERER_GENERAL_BOOTSTRAPMETHOD: file
+      ORDERER_GENERAL_BOOTSTRAPFILE: /var/hyperledger/orderer/orderer.genesis.block
+      ORDERER_FILELEDGER_LOCATION: /var/hyperledger/production/orderer
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    ports:
+      - "7050:7050"
+    volumes:
+      - ./fabric/organizations/ordererOrganizations/medivault.local/orderers/orderer.medivault.local/msp:/var/hyperledger/orderer/msp
+      - ./fabric/organizations/ordererOrganizations/medivault.local/orderers/orderer.medivault.local/tls:/var/hyperledger/orderer/tls
+      - ./fabric/channel-artifacts/orderer.genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - orderer_data:/var/hyperledger/production/orderer
+    networks:
+      medivault-network:
+        aliases:
+          - orderer.medivault.local
+    depends_on:
+      - ca-orderer
+
+  # ── Fabric Peers ──────────────────────────────────────────────────────────────
+  peer0.hospital1.medivault.local:
+    image: hyperledger/fabric-peer:2.5
+    container_name: peer0.hospital1.medivault.local
+    environment:
+      FABRIC_CFG_PATH: /etc/hyperledger/fabric
+      FABRIC_LOGGING_SPEC: INFO
+      CORE_PEER_TLS_ENABLED: "true"
+      CORE_PEER_TLS_CERT_FILE: /etc/hyperledger/fabric/tls/server.crt
+      CORE_PEER_TLS_KEY_FILE: /etc/hyperledger/fabric/tls/server.key
+      CORE_PEER_TLS_ROOTCERT_FILE: /etc/hyperledger/fabric/tls/ca.crt
+      CORE_PEER_ID: peer0.hospital1.medivault.local
+      CORE_PEER_ADDRESS: peer0.hospital1.medivault.local:7051
+      CORE_PEER_LISTENADDRESS: 0.0.0.0:7051
+      CORE_PEER_CHAINCODEADDRESS: peer0.hospital1.medivault.local:7052
+      CORE_PEER_CHAINCODELISTENADDRESS: 0.0.0.0:7052
+      CORE_PEER_GOSSIP_BOOTSTRAP: peer0.hospital1.medivault.local:7051
+      CORE_PEER_GOSSIP_EXTERNALENDPOINT: peer0.hospital1.medivault.local:7051
+      CORE_PEER_GOSSIP_USELEADERELECTION: "true"
+      CORE_PEER_GOSSIP_ORGLEADER: "false"
+      CORE_PEER_LOCALMSPID: Hospital1MSP
+      CORE_PEER_MSPCONFIGPATH: /etc/hyperledger/fabric/msp
+      CORE_LEDGER_STATE_STATEDATABASE: CouchDB
+      CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS: couchdb_hospital1:5984
+      CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME: admin
+      CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD: adminpw
+      CORE_OPERATIONS_LISTENADDRESS: 0.0.0.0:9440
+      CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE: medivault-network
+    working_dir: /root
+    command: peer node start
+    ports:
+      - "7051:7051"
+      - "9440:9440"
+    volumes:
+      - ./fabric/organizations/peerOrganizations/hospital1.medivault.local/peers/peer0.hospital1.medivault.local/msp:/etc/hyperledger/fabric/msp
+      - ./fabric/organizations/peerOrganizations/hospital1.medivault.local/peers/peer0.hospital1.medivault.local/tls:/etc/hyperledger/fabric/tls
+      - ./fabric/config/core.yaml:/etc/hyperledger/fabric/core.yaml
+      - peer0_hospital1_data:/var/hyperledger/production
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      medivault-network:
+        aliases:
+          - peer0.hospital1.medivault.local
+    depends_on:
+      couchdb_hospital1:
+        condition: service_healthy
+      ca-hospital1:
+        condition: service_started
+
+  peer0.hospital2.medivault.local:
+    image: hyperledger/fabric-peer:2.5
+    container_name: peer0.hospital2.medivault.local
+    environment:
+      FABRIC_CFG_PATH: /etc/hyperledger/fabric
+      FABRIC_LOGGING_SPEC: INFO
+      CORE_PEER_TLS_ENABLED: "true"
+      CORE_PEER_TLS_CERT_FILE: /etc/hyperledger/fabric/tls/server.crt
+      CORE_PEER_TLS_KEY_FILE: /etc/hyperledger/fabric/tls/server.key
+      CORE_PEER_TLS_ROOTCERT_FILE: /etc/hyperledger/fabric/tls/ca.crt
+      CORE_PEER_ID: peer0.hospital2.medivault.local
+      CORE_PEER_ADDRESS: peer0.hospital2.medivault.local:7051
+      CORE_PEER_LISTENADDRESS: 0.0.0.0:7051
+      CORE_PEER_CHAINCODEADDRESS: peer0.hospital2.medivault.local:7052
+      CORE_PEER_CHAINCODELISTENADDRESS: 0.0.0.0:7052
+      CORE_PEER_GOSSIP_BOOTSTRAP: peer0.hospital2.medivault.local:7051
+      CORE_PEER_GOSSIP_EXTERNALENDPOINT: peer0.hospital2.medivault.local:7051
+      CORE_PEER_GOSSIP_USELEADERELECTION: "true"
+      CORE_PEER_GOSSIP_ORGLEADER: "false"
+      CORE_PEER_LOCALMSPID: Hospital2MSP
+      CORE_PEER_MSPCONFIGPATH: /etc/hyperledger/fabric/msp
+      CORE_LEDGER_STATE_STATEDATABASE: CouchDB
+      CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS: couchdb_hospital2:5984
+      CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME: admin
+      CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD: adminpw
+      CORE_OPERATIONS_LISTENADDRESS: 0.0.0.0:9441
+      CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE: medivault-network
+    working_dir: /root
+    command: peer node start
+    ports:
+      - "8051:7051"
+      - "9441:9441"
+    volumes:
+      - ./fabric/organizations/peerOrganizations/hospital2.medivault.local/peers/peer0.hospital2.medivault.local/msp:/etc/hyperledger/fabric/msp
+      - ./fabric/organizations/peerOrganizations/hospital2.medivault.local/peers/peer0.hospital2.medivault.local/tls:/etc/hyperledger/fabric/tls
+      - ./fabric/config/core.yaml:/etc/hyperledger/fabric/core.yaml
+      - peer0_hospital2_data:/var/hyperledger/production
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      medivault-network:
+        aliases:
+          - peer0.hospital2.medivault.local
+    depends_on:
+      couchdb_hospital2:
+        condition: service_healthy
+      ca-hospital2:
+        condition: service_started
+
+  # ── Express API Server ────────────────────────────────────────────────────────
+  api-server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medivault-api-server
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: development
+      PORT: 3002
+      DATABASE_URL: postgresql://medivault:medivault123@postgres:5432/medivault
+      REDIS_URL: redis://redis:6379
+      FABRIC_CA_URL: http://ca-hospital1:7054
+      FABRIC_ORDERER_URL: orderer.medivault.local:7050
+      FABRIC_PEER_URL: peer0.hospital1.medivault.local:7051
+      FABRIC_CONNECTION_PROFILE: /app/fabric-config/connection-profile.json
+      FABRIC_WALLET_PATH: /app/wallet
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./fabric/organizations:/app/fabric-config/organizations:ro
+      - ./wallet:/app/wallet
+    networks:
+      - medivault-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      peer0.hospital1.medivault.local:
+        condition: service_started
+    restart: unless-stopped
+    command: npm start
+
+  # ── Next.js Frontend ──────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./MediVault-main
+      dockerfile: Dockerfile.frontend
+    container_name: medivault-frontend
+    environment:
+      NODE_ENV: development
+      # NEXT_PUBLIC_ vars are embedded in the browser bundle — browser accesses host:3002
+      NEXT_PUBLIC_API_URL: http://localhost:3002
+      NEXT_PUBLIC_APP_NAME: MediVault
+      NEXT_PUBLIC_PINATA_JWT: ${NEXT_PUBLIC_PINATA_JWT:-}
+      NEXT_PUBLIC_PINATA_GATEWAY: https://gateway.pinata.cloud
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./MediVault-main:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - medivault-network
+    depends_on:
+      - api-server
+    command: npm run dev
+
+networks:
+  medivault-network:
+    driver: bridge
+    name: medivault-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  couchdb_hospital1_data:
+  couchdb_hospital2_data:
+  ca_hospital1_data:
+  ca_hospital2_data:
+  ca_orderer_data:
+  orderer_data:
+  peer0_hospital1_data:
+  peer0_hospital2_data:

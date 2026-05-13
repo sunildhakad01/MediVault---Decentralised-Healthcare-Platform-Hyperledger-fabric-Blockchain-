@@ -1,0 +1,92 @@
+{
+  "name": "medivault-network",
+  "version": "1.0.0",
+  "client": {
+    "organization": "Hospital1",
+    "connection": {
+      "timeout": {
+        "peer": { "endorser": "300" },
+        "orderer": "300"
+      }
+    }
+  },
+  "channels": {
+    "medicalrecords-channel": {
+      "orderers": ["orderer.medivault.local"],
+      "peers": {
+        "peer0.hospital1.medivault.local": {
+          "endorsingPeer": true,
+          "chaincodeQuery": true,
+          "ledgerQuery": true,
+          "eventSource": true
+        },
+        "peer0.hospital2.medivault.local": {
+          "endorsingPeer": true,
+          "chaincodeQuery": false,
+          "ledgerQuery": true,
+          "eventSource": false
+        }
+      }
+    }
+  },
+  "organizations": {
+    "Hospital1": {
+      "mspid": "Hospital1MSP",
+      "peers": ["peer0.hospital1.medivault.local"],
+      "certificateAuthorities": ["ca-hospital1"]
+    },
+    "Hospital2": {
+      "mspid": "Hospital2MSP",
+      "peers": ["peer0.hospital2.medivault.local"],
+      "certificateAuthorities": ["ca-hospital2"]
+    }
+  },
+  "orderers": {
+    "orderer.medivault.local": {
+      "url": "grpcs://localhost:7050",
+      "grpcOptions": {
+        "ssl-target-name-override": "orderer.medivault.local",
+        "hostnameOverride": "orderer.medivault.local"
+      },
+      "tlsCACerts": {
+        "path": "../fabric/organizations/ordererOrganizations/medivault.local/orderers/orderer.medivault.local/tls/ca.crt"
+      }
+    }
+  },
+  "peers": {
+    "peer0.hospital1.medivault.local": {
+      "url": "grpcs://localhost:7051",
+      "grpcOptions": {
+        "ssl-target-name-override": "peer0.hospital1.medivault.local",
+        "hostnameOverride": "peer0.hospital1.medivault.local"
+      },
+      "tlsCACerts": {
+        "path": "../fabric/organizations/peerOrganizations/hospital1.medivault.local/peers/peer0.hospital1.medivault.local/tls/ca.crt"
+      }
+    },
+    "peer0.hospital2.medivault.local": {
+      "url": "grpcs://localhost:8051",
+      "grpcOptions": {
+        "ssl-target-name-override": "peer0.hospital2.medivault.local",
+        "hostnameOverride": "peer0.hospital2.medivault.local"
+      },
+      "tlsCACerts": {
+        "path": "../fabric/organizations/peerOrganizations/hospital2.medivault.local/peers/peer0.hospital2.medivault.local/tls/ca.crt"
+      }
+    }
+  },
+  "certificateAuthorities": {
+    "ca-hospital1": {
+      "url": "http://localhost:7054",
+      "caName": "ca-hospital1",
+      "httpOptions": { "verify": false },
+      "registrar": [{ "enrollId": "admin", "enrollSecret": "hospital1pw" }]
+    },
+    "ca-hospital2": {
+      "url": "http://localhost:7055",
+      "caName": "ca-hospital2",
+      "httpOptions": { "verify": false },
+      "registrar": [{ "enrollId": "admin", "enrollSecret": "hospital2pw" }]
+    }
+  }
+}

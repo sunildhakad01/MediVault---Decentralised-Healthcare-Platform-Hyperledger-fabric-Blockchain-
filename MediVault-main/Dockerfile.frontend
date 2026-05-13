@@ -1,0 +1,15 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy only package.json (not package-lock.json) so npm installs fresh
+# from the declared dependencies — avoids stale wallet/MetaMask packages
+# that may linger in an old lock file.
+COPY package.json ./
+RUN npm install --legacy-peer-deps
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
