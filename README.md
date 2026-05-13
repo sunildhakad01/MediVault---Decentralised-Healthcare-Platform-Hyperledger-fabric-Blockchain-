@@ -126,8 +126,8 @@ Hospitals register and are verified by the super admin. The portal covers full h
 
 ### Super Admin Portal
 Password + 2FA OTP authentication. Full system visibility: hospital verification, doctor verification, system-wide announcements, audit logs, team management, revenue analytics, and configuration of specializations and insurance providers.
-<img width="522" height="277" alt="image" src="https://github.com/user-attachments/assets/affd6571-0fac-4a31-9f89-cf30dfd49c04" />
-<img width="984" height="454" alt="image" src="https://github.com/user-attachments/assets/47829a53-2f0f-4c95-ae9f-39f7bd1a0c38" />
+<img width="1906" height="910" alt="Screenshot 2026-04-20 143427" src="https://github.com/user-attachments/assets/22b3dbd4-0155-4ec2-b4a3-349119be5d30" />
+<img width="1506" height="819" alt="Screenshot 2026-04-20 143653" src="https://github.com/user-attachments/assets/691763ec-646f-4dfb-9f08-455696f1b400" />
 
 ---
 
@@ -144,7 +144,8 @@ AI-Vaidya is a multi-agent medical AI assistant embedded in all four portals via
 6. Every query is audit-logged with a SHA-256 response hash (never the response itself)
 
 Portal policies ensure patients receive plain-language wellness guidance while doctors receive full clinical detail including drug dosages and differential diagnosis support.
-<img width="984" height="454" alt="image" src="https://github.com/user-attachments/assets/b4145ff0-8da4-4109-b368-c8c08f1d4502" />
+<img width="1124" height="698" alt="Screenshot 2026-04-20 123333" src="https://github.com/user-attachments/assets/fa3cabbc-dcfb-437d-a16b-733f60019006" />
+<img width="1099" height="694" alt="Screenshot 2026-04-20 134949" src="https://github.com/user-attachments/assets/81f44048-c784-431e-a33e-fab5a6ea7fcb" />
 
 ---
 
