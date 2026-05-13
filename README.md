@@ -109,17 +109,25 @@ MediVault is a **decentralized healthcare data ecosystem** that acts as a single
 
 ## Portals
 
+<img width="984" height="454" alt="image" src="https://github.com/user-attachments/assets/95d02af6-7260-4797-8ed0-e350ab23321c" />
+
 ### Patient Portal
 Patients register via a 3-step OTP + PIN flow. The dashboard provides access to appointments, prescriptions, lab reports, medication reminders, invoices, and emergency contacts. Patients control their own consent via the Fabric layer.
+<img width="1039" height="451" alt="image" src="https://github.com/user-attachments/assets/67663501-a19b-4fcf-84ec-dc18fbcda816" />
 
 ### Doctor Portal
 Doctors register and are verified by hospital admins or the super admin. The portal supports consultation workflows (pre-consult patient history, diagnosis notes, prescription issuance, lab test orders), availability scheduling, and digital signature capture.
+<img width="1059" height="450" alt="image" src="https://github.com/user-attachments/assets/3d45bfd7-25fb-4487-8946-79e6d8b9357d" />
 
 ### Hospital Admin Portal
 Hospitals register and are verified by the super admin. The portal covers full hospital operations: doctor management, department CRUD, appointment tracking, bed occupancy, staff management, lab coordination, billing, and broadcast notifications.
+<img width="995" height="351" alt="image" src="https://github.com/user-attachments/assets/b230f21c-8a8a-4dc1-8896-9ce828906d39" />
+<img width="1040" height="603" alt="image" src="https://github.com/user-attachments/assets/0cae8506-f59c-436a-8d5f-b7998467b1cd" />
 
 ### Super Admin Portal
 Password + 2FA OTP authentication. Full system visibility: hospital verification, doctor verification, system-wide announcements, audit logs, team management, revenue analytics, and configuration of specializations and insurance providers.
+<img width="522" height="277" alt="image" src="https://github.com/user-attachments/assets/affd6571-0fac-4a31-9f89-cf30dfd49c04" />
+<img width="984" height="454" alt="image" src="https://github.com/user-attachments/assets/47829a53-2f0f-4c95-ae9f-39f7bd1a0c38" />
 
 ---
 
@@ -136,6 +144,7 @@ AI-Vaidya is a multi-agent medical AI assistant embedded in all four portals via
 6. Every query is audit-logged with a SHA-256 response hash (never the response itself)
 
 Portal policies ensure patients receive plain-language wellness guidance while doctors receive full clinical detail including drug dosages and differential diagnosis support.
+<img width="984" height="454" alt="image" src="https://github.com/user-attachments/assets/b4145ff0-8da4-4109-b368-c8c08f1d4502" />
 
 ---
 
